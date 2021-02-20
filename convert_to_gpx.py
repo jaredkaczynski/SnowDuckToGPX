@@ -10,18 +10,17 @@ with open('buf1.txt') as fp:
     root,metadata = None,None
     line = fp.readline()
     cnt = 1
-    seen_times = set()
     skip = False
+    session_date = ''
     while line:
         try:
             if 'day_session' in line:
                 skip = False
-                seen_times = set()
                 try:
                     xml_str = root.toprettyxml(indent ="\t")
-                    # save_path_file = "day{}.gpx".format(cnt)
-                    # with open(save_path_file, "w") as f:
-                    #     f.write(xml_str)
+                    save_path_file = "visit-{}.gpx".format(session_date)
+                    with open(save_path_file, "w") as f:
+                        f.write(xml_str)
                 except:
                     pass
                 cnt += 1
@@ -35,7 +34,7 @@ with open('buf1.txt') as fp:
                 trkseg = root.createElement('trkseg')
                 trk.appendChild(trkseg)
             elif 'main_timestamp' in line:
-                continue
+                session_date = datetime.utcfromtimestamp(float(line.split('=')[1].strip())).strftime('%Y-%m-%d-%H-%M-%S')
             elif 'location_name' in line:
                 name = root.createElement('name')
                 text = root.createTextNode(line.split('"')[1].split('"')[0].strip())
@@ -51,15 +50,8 @@ with open('buf1.txt') as fp:
                 date_time_object = datetime.utcfromtimestamp(float(line.split('=')[1].strip()))
                 time_string = date_time_object.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4]+'Z'
                 timestamp = root.createTextNode(time_string)
-                if time_string not in seen_times:
-                    skip = False
-                    seen_times.add(time_string)
-                    time.appendChild(timestamp)
-                    root.lastChild.lastChild.lastChild.lastChild.appendChild(time)
-                else:
-                    skip = True
-            elif skip:
-                continue
+                time.appendChild(timestamp)
+                root.lastChild.lastChild.lastChild.lastChild.appendChild(time)
             elif 'x' in line:
                 x = (line.split('=')[1].strip())
                 root.lastChild.lastChild.lastChild.lastChild.setAttribute('lat', x)
@@ -78,7 +70,7 @@ with open('buf1.txt') as fp:
             line = fp.readline()
     try:
         xml_str = root.toprettyxml(indent ="\t")
-        save_path_file = "day{}.gpx".format(cnt)
+        save_path_file = "visit-{}.gpx".format(session_date)
         with open(save_path_file, "w") as f:
             f.write(xml_str)
     except:
