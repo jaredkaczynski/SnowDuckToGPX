@@ -1,3 +1,5 @@
+Snowduck to GPX conversion tool
+
 How to Use:
 
 Add your raw protobuf from the network request to a file called test.txt.
